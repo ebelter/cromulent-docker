@@ -52,8 +52,21 @@ RUN useradd -Ms /bin/bash ${username} -G staff && \
 	chgrp -R ${username} /home/${username}/
 RUN echo "${username} ALL=(ALL:ALL) NOPASSWD: ALL" | sudo EDITOR='tee -a' visudo
 USER ${username}
-WORKDIR /home/${username}
 ENV HOME /home/${username}
 
+# MYSQL
+RUN sudo apt-get update && \
+	DEBIAN_FRONTEND=noninteractive apt-get --only-upgrade install -y --no-install-recommends \
+  mysql-client
+
+# Cromulent
+WORKDIR /tmp/cromulent
+COPY cromulent/ ./
+RUN pip install .
+WORKDIR /tmp
+RUN rm -rf cromulent/
+#TODO connect ports 8000 & 3601?, and something i just forgot
+
 # Default Command
+WORKDIR /home/${username}
 CMD [ /bin/bash ]
